@@ -23,7 +23,7 @@ show_progress() {
 }
 
 show_success() {
-    echo -e "${GREEN}✓ $1${NC}"
+    printf "\r\033[K${GREEN}✓ %s${NC}\n" "$1"
 }
 
 show_error() {
