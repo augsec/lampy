@@ -75,20 +75,20 @@ install_with_progress() {
     local spinstr=""
     local percent=0
 
-    eval "$cmd" > "$log_file" 2>&1 &
+    $cmd > "$log_file" 2>&1 &
     local pid=$!
 
     while kill -0 $pid 2>/dev/null; do
         counter=$((counter + 1))
         spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
-        printf "\r\033[K" 
+        printf "\r\033[K"  # Limpa a linha sem adicionar espaços extras
         printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
         sleep $delay
     done
 
     wait $pid
     if [ $? -eq 0 ]; then
-        printf "\r\033[K" 
+        printf "\r\033[K"  # Limpa a linha antes de exibir a mensagem de sucesso
         show_success "$msg"
     else
         echo
