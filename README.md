@@ -72,8 +72,7 @@ Se o Lampy te ajudou, considere:
 ## 📞 Suporte
 
 - [Issues](https://github.com/augsec/lampy/issues)
-- [Discussions](https://github.com/augsec/lampy/discussions)
-- [Discord](https://discord.gg/seu-servidor)
+
 
 ---
 
