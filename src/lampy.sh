@@ -280,7 +280,7 @@ echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf
 
 
 export DEBIAN_FRONTEND=noninteractive
-install_with_progress "Instalando phpMyAdmin" "apt-get install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
+install_with_progress "Instalando phpMyAdmin" "/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
 
 # Cria link para o phpMyAdmin
 show_progress "Criando link para o phpMyAdmin"
