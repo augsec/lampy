@@ -278,8 +278,9 @@ echo "phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PASS" | debconf-set
 echo "phpmyadmin phpmyadmin/mysql/app-pass password $MYSQL_PASS" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
 
-# Instalar phpMyAdmin sem interação manual
-install_with_progress "Instalando phpMyAdmin" "DEBIAN_FRONTEND=noninteractive apt install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
+
+export DEBIAN_FRONTEND=noninteractive
+install_with_progress "Instalando phpMyAdmin" "apt-get install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
 
 # Cria link para o phpMyAdmin
 show_progress "Criando link para o phpMyAdmin"
