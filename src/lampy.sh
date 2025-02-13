@@ -81,14 +81,14 @@ install_with_progress() {
     while kill -0 $pid 2>/dev/null; do
         counter=$((counter + 1))
         spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
-        printf "\r\033[K"  # Limpa a linha sem adicionar espaços extras
+        printf "\r\033[K" 
         printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
         sleep $delay
     done
 
     wait $pid
     if [ $? -eq 0 ]; then
-        printf "\r\033[K"  # Limpa a linha antes de exibir a mensagem de sucesso
+        printf "\r\033[K"
         show_success "$msg"
     else
         echo
@@ -113,7 +113,7 @@ show_banner() {
 }
 
 
-# Função para configurar credenciais
+
 setup_credentials() {
     echo
     echo "Configuração de credenciais do phpMyAdmin:"
@@ -146,13 +146,11 @@ setup_credentials() {
 
 
 
-# Função de remoção completa
 remover_lampy() {
     echo "=========================================="
     echo "         🔥 Removendo Lampy...            "
     echo "=========================================="
 
-    # Para os serviços
     show_progress "Parando serviços"
     systemctl stop apache2 mysql php* 2>/dev/null
     check_status "Serviços parados"
@@ -160,13 +158,11 @@ remover_lampy() {
     sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-remove boolean true"
     sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-upgrade boolean true"
 
-    # Remove pacotes
     show_progress "Removendo pacotes"
     DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y apache2* php* mysql* phpmyadmin* 2>/dev/null
     apt-get autoremove --purge -y 2>/dev/null
     check_status "Pacotes removidos"
 
-    # Remove diretórios e configurações
     show_progress "Removendo diretórios e configurações"
     rm -rf /etc/apache2
     rm -rf /etc/mysql
@@ -178,12 +174,10 @@ remover_lampy() {
     rm -rf /var/lib/phpmyadmin
     check_status "Diretórios removidos"
 
-    # Limpa entradas do hosts
     show_progress "Limpando /etc/hosts"
     sed -i '/site[1-3].local/d' /etc/hosts
     check_status "Arquivo hosts limpo"
 
-    # Remove resíduos de configuração
     show_progress "Removendo configurações residuais"
     find /etc -name "*apache*" -exec rm -rf {} \; 2>/dev/null
     find /etc -name "*php*" -exec rm -rf {} \; 2>/dev/null
@@ -194,7 +188,6 @@ remover_lampy() {
     find /var/log -name "*mysql*" -exec rm -rf {} \; 2>/dev/null
     check_status "Configurações residuais removidas"
 
-    # Limpa cache apt
     show_progress "Limpando cache do APT"
     apt-get clean
     apt-get autoclean
@@ -206,20 +199,16 @@ remover_lampy() {
     exit 0
 }
 
-# Verifica se o script está sendo executado como root
 if [[ $EUID -ne 0 ]]; then
     show_error "Este script precisa ser executado como root. Por favor, execute:\n\n    sudo bash lampy.sh"
 fi
 
-# Se o script for chamado com --remove, executa a remoção
 if [[ "$1" == "--remove" ]]; then
     remover_lampy
 fi
 
-# Exibe o banner
 show_banner
 
-# Confirmação do usuário
 echo -e "\nEste script irá instalar:"
 echo -e "${BLUE}• Apache${NC} (Servidor Web)"
 echo -e "${BLUE}• PHP${NC} e extensões comuns"
@@ -235,43 +224,34 @@ if [[ ! $REPLY =~ ^[Ss]$ ]] && [[ ! -z $REPLY ]]; then
     exit 0
 fi
 
-# Configuração de credenciais
 setup_credentials
 
-# Atualiza os repositórios
 show_progress "Atualizando repositórios"
 apt update &>/dev/null
 check_status "Atualização dos repositórios"
 
-# Instala o Apache
 install_with_progress "Instalando Apache" "apt install -y apache2" "/tmp/apache_install.log"
 
 
-# Habilita o Apache para iniciar com o sistema
 show_progress "Configurando Apache"
 systemctl enable apache2 &>/dev/null
 systemctl start apache2 &>/dev/null
 check_status "Configuração do Apache"
 
-# Instala o PHP e extensões comuns
 install_with_progress "Instalando PHP e extensões" "apt install -y php php-cli php-fpm php-json php-common php-mysql php-zip php-gd php-mbstring php-curl php-xml php-pear php-bcmath" "/tmp/php_install.log"
 
-# Instala o MySQL Server
 install_with_progress "Instalando MySQL Server" "apt install -y mysql-server" "/tmp/mysql_install.log"
 
-# Configura o MySQL para iniciar com o sistema e configura credenciais
 show_progress "Configurando MySQL"
 systemctl enable mysql &>/dev/null
 systemctl start mysql &>/dev/null
 
-# Configura o usuário MySQL
 mysql -e "CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'localhost' IDENTIFIED BY '${MYSQL_PASS}';"
 mysql -e "GRANT ALL PRIVILEGES ON *.* TO '${MYSQL_USER}'@'localhost' WITH GRANT OPTION;"
 mysql -e "FLUSH PRIVILEGES;"
 
 check_status "Configuração do MySQL"
 
-# Configurar debconf antes da instalação para evitar prompts
 echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/app-password-confirm password ''" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PASS" | debconf-set-selections
@@ -282,18 +262,15 @@ echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf
 export DEBIAN_FRONTEND=noninteractive
 install_with_progress "Instalando phpMyAdmin" "/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
 
-# Cria link para o phpMyAdmin
 show_progress "Criando link para o phpMyAdmin"
 ln -s /usr/share/phpmyadmin /var/www/html/phpmyadmin &>/dev/null
 check_status "Link do phpMyAdmin criado"
 
-# Configuração para múltiplos sites
 show_progress "Configurando suporte a múltiplos sites"
 mkdir -p /var/www/sites
 chown -R www-data:www-data /var/www/sites
 check_status "Configuração de múltiplos sites"
 
-# Função para criar VirtualHost
 create_vhost() {
     local domain=$1
     local port=$2
@@ -332,29 +309,24 @@ EOF
     show_success "Site $domain criado"
 }
 
-# Habilita módulos necessários do Apache
 install_with_progress "Habilitando módulos Apache" "a2enmod rewrite headers ssl" "/tmp/apache_modules.log"
 
 check_status "Módulos do Apache habilitados"
 
-# Cria sites de exemplo
 create_vhost "site1.local" 80
 create_vhost "site2.local" 8080
 create_vhost "site3.local" 8081
 
-# Reinicia o Apache para aplicar as configurações
 show_progress "Reiniciando Apache..."
 systemctl restart apache2 &>/dev/null
 check_status "Apache reiniciado"
 
-# Configura o /etc/hosts
 show_progress "Configurando /etc/hosts"
 echo "127.0.0.1 site1.local" >> /etc/hosts
 echo "127.0.0.1 site2.local" >> /etc/hosts
 echo "127.0.0.1 site3.local" >> /etc/hosts
 check_status "Configuração do /etc/hosts"
 
-# Exibe informações finais
 echo
 echo -e "${GREEN}==========================================${NC}"
 echo -e "${GREEN}       Instalação Concluída!! 🎉         ${NC}"
