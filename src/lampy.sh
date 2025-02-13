@@ -157,8 +157,8 @@ remover_lampy() {
     systemctl stop apache2 mysql php* 2>/dev/null
     check_status "Serviços parados"
 
-    echo "phpmyadmin phpmyadmin/dbconfig-remove boolean true" | debconf-set-selections
-    echo "phpmyadmin phpmyadmin/dbconfig-upgrade boolean true" | debconf-set-selections
+    sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-remove boolean true"
+    sudo debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-upgrade boolean true"
 
     # Remove pacotes
     show_progress "Removendo pacotes"
