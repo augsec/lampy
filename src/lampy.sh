@@ -271,9 +271,15 @@ mysql -e "FLUSH PRIVILEGES;"
 
 check_status "Configuração do MySQL"
 
-# Instala o phpMyAdmin
-install_with_progress "Instalando phpMyAdmin" "DEBIAN_FRONTEND=noninteractive apt install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
+# Configurar debconf antes da instalação para evitar prompts
+echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/app-password-confirm password ''" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PASS" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/app-pass password $MYSQL_PASS" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
 
+# Instalar phpMyAdmin sem interação manual
+install_with_progress "Instalando phpMyAdmin" "DEBIAN_FRONTEND=noninteractive apt install -y phpmyadmin" "/tmp/phpmyadmin_install.log"
 
 # Cria link para o phpMyAdmin
 show_progress "Criando link para o phpMyAdmin"
