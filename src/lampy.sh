@@ -80,10 +80,9 @@ install_with_progress() {
 
     while kill -0 $pid 2>/dev/null; do
         counter=$((counter + 1))
-        percent=$((counter % 100))
         spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
         printf "\r%-60s" ""  
-        printf "\r${YELLOW}➜ %s... %s [%3d%%]${NC}" "$msg" "$spinstr" "$percent"
+        printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
         sleep $delay
     done
 
