@@ -58,12 +58,12 @@ show_spinner() {
     local spinstr=""
 
     while kill -0 $pid 2>/dev/null; do
-        counter=$((counter + 1))
-        spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
-        printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
-        sleep $delay
+    counter=$((counter + 1))
+    spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
+    printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
+    sleep $delay
     done
-    printf "\r%-60s\r" ""
+    printf "\r\033[K"
 }
 
 install_with_progress() {
