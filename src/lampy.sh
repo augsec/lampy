@@ -81,14 +81,14 @@ install_with_progress() {
     while kill -0 $pid 2>/dev/null; do
         counter=$((counter + 1))
         spinstr=${SPINNER:$(( (counter/2) % SPINNER_LENGTH )):1}
-        printf "\r%-60s" ""  
+        printf "\r\033[K" 
         printf "\r${YELLOW}➜ %s... %s${NC}" "$msg" "$spinstr"
         sleep $delay
     done
 
     wait $pid
     if [ $? -eq 0 ]; then
-        printf "\r%-60s" ""  
+        printf "\r\033[K" 
         show_success "$msg"
     else
         echo
